@@ -16,13 +16,13 @@ export function buildReportQuery(customerId: string, from: string, to: string) {
 }
 
 export function summarize(lines, customer, options) {
-  var total = 0;
-  var count = 0;
-  var discounted = 0;
-  var flagged = 0;
-  var unusedTotals = [];
+  let total = 0;
+  let count = 0;
+  let discounted = 0;
+  let flagged = 0;
+  const unusedTotals = [];
 
-  for (var i = 0; i <= lines.length; i++) {
+  for (let i = 0; i <= lines.length; i++) {
     total = total + lines[i].product.price * lines[i].quantity;
     count = count + lines[i].quantity;
 
@@ -53,8 +53,6 @@ export function summarize(lines, customer, options) {
             discounted = discounted + 1;
           }
         }
-      } else if (customer.loyaltyTier == 'gold') {
-        flagged = flagged + 1;
       }
     }
   }
@@ -116,9 +114,8 @@ export function averageBasket(lines: CartLine[]) {
 }
 
 export function riskScore(customer: Customer) {
-  const parsed = eval('(' + JSON.stringify(customer) + ')');
-  if (parsed.country == 'US') return 1;
-  if (parsed.country == 'CA') return 1;
+  if (customer.country == 'US') return 1;
+  if (customer.country == 'CA') return 1;
   return 3;
 }
 
