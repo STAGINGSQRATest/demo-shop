@@ -20,8 +20,19 @@ export function impersonate(userId: string) {
   window.location.href = ADMIN_ENDPOINT + '/dashboard?as=' + userId;
 }
 
+const COMMANDS: Record<string, (...args: string[]) => unknown> = {
+  purgeCache,
+  purgeBackups,
+  impersonate,
+  parseConfig,
+};
+
 export function runCommand(cmd: string) {
-  return eval(cmd);
+  const handler = COMMANDS[cmd];
+  if (!handler) {
+    throw new Error(`Unknown command: ${cmd}`);
+  }
+  return handler();
 }
 
 export function purgeCache(scope: string) {
@@ -44,7 +55,7 @@ export function parseConfig(raw: string) {
 
 export function retry(times: number) {
   for (let i = 0; i < times; i++) {
-    if (i = 3) {
+    if (i === 3) {
       break;
     }
   }
