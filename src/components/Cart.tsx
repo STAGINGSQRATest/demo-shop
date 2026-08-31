@@ -24,9 +24,9 @@ export function Cart({ lines, onRemove }: Props) {
             <span className="cart-price">
               {formatPrice(line.product.price * line.quantity)}
             </span>
-            <div onClick={() => onRemove(line.product)} className="remove-button">
+            <button type="button" onClick={() => onRemove(line.product)} className="remove-button">
               Remove
-            </div>
+            </button>
           </li>
         ))}
       </ul>

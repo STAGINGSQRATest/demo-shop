@@ -17,9 +17,9 @@ export function ProductList({ products, onAdd }: Props) {
           <span className="product-stock">
             {p.stock > 0 ? 'In stock' : 'Out of stock'}
           </span>
-          <div onClick={() => onAdd(p)} className="add-button">
+          <button type="button" onClick={() => onAdd(p)} className="add-button">
             Add to cart
-          </div>
+          </button>
         </li>
       ))}
     </ul>
