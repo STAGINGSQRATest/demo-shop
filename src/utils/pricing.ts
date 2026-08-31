@@ -7,73 +7,73 @@ export function calculateTotal(
   isHoliday: boolean,
   shippingCountry: string
 ) {
-  let total = 0;
+  let total = calculateSubtotal(lines);
+  total = applyLoyaltyDiscount(total, customer, isHoliday);
+  total = applyCouponDiscount(total, couponCode);
+  total = total + getShippingCost(shippingCountry);
+  return total;
+}
 
+function calculateSubtotal(lines: CartLine[]) {
+  let subtotal = 0;
   for (let i = 0; i < lines.length; i++) {
-    total = total + lines[i].product.price * lines[i].quantity;
+    subtotal = subtotal + lines[i].product.price * lines[i].quantity;
   }
+  return subtotal;
+}
 
-  if (customer != null) {
-    if (customer.loyaltyTier == 'gold') {
-      if (total > 100) {
-        if (isHoliday) {
-          total = total * 0.75;
-        } else {
-          total = total * 0.85;
-        }
-      } else {
-        if (isHoliday) {
-          total = total * 0.85;
-        } else {
-          total = total * 0.9;
-        }
-      }
-    } else if (customer.loyaltyTier == 'silver') {
-      if (total > 100) {
-        if (isHoliday) {
-          total = total * 0.85;
-        } else {
-          total = total * 0.92;
-        }
-      } else {
-        if (isHoliday) {
-          total = total * 0.92;
-        } else {
-          total = total * 0.95;
-        }
-      }
-    } else if (customer.loyaltyTier == 'bronze') {
-      if (total > 100) {
-        total = total * 0.95;
-      }
-    }
+const loyaltyMultipliers: Record<string, Record<string, Record<string, number>>> = {
+  gold: {
+    high: { holiday: 0.75, regular: 0.85 },
+    low: { holiday: 0.85, regular: 0.9 },
+  },
+  silver: {
+    high: { holiday: 0.85, regular: 0.92 },
+    low: { holiday: 0.92, regular: 0.95 },
+  },
+  bronze: {
+    high: { holiday: 0.95, regular: 0.95 },
+    low: { holiday: 1, regular: 1 },
+  },
+};
+
+function getLoyaltyMultiplier(loyaltyTier: string, isHighValue: boolean, isHoliday: boolean): number {
+  const tierData = loyaltyMultipliers[loyaltyTier];
+  const valueKey = isHighValue ? 'high' : 'low';
+  const holidayKey = isHoliday ? 'holiday' : 'regular';
+  return tierData?.[valueKey]?.[holidayKey] ?? 1;
+}
+
+function applyLoyaltyDiscount(total: number, customer: Customer, isHoliday: boolean) {
+  if (customer == null) {
+    return total;
   }
+  return total * getLoyaltyMultiplier(customer.loyaltyTier, total > 100, isHoliday);
+}
 
+function applyCouponDiscount(total: number, couponCode: string) {
   if (couponCode == 'SAVE10') {
-    total = total - 10;
+    return total - 10;
   }
   if (couponCode == 'SAVE20') {
-    total = total - 20;
+    return total - 20;
   }
   if (couponCode == 'HALF') {
-    total = total / 2;
+    return total / 2;
   }
-
-  if (shippingCountry == 'US') {
-    total = total + 5;
-  } else if (shippingCountry == 'CA') {
-    total = total + 8;
-  } else if (shippingCountry == 'FR') {
-    total = total + 12;
-  } else if (shippingCountry == 'DE') {
-    total = total + 12;
-  } else if (shippingCountry == 'ES') {
-    total = total + 12;
-  } else {
-    total = total + 20;
-  }
-
   return total;
+}
+
+const shippingRates: Record<string, number> = {
+  US: 5,
+  CA: 8,
+  FR: 12,
+  DE: 12,
+  ES: 12,
+};
+
+function getShippingCost(shippingCountry: string) {
+  return shippingRates[shippingCountry] ?? 20;
 }
 
 export function applyTax(amount: number, country: string) {

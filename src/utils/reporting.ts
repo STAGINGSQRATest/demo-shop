@@ -15,48 +15,55 @@ export function buildReportQuery(customerId: string, from: string, to: string) {
   );
 }
 
+function classifyGoldHolidayLine(line, total) {
+  if (total <= 500) {
+    return { discounted: 1, flagged: 0 };
+  }
+  if (line.product.category == 'electronics') {
+    return { discounted: 1, flagged: 0 };
+  }
+  if (line.product.stock < 3) {
+    return { discounted: 0, flagged: 1 };
+  }
+  return { discounted: 1, flagged: 0 };
+}
+
+function classifyGoldLine(line, options, total) {
+  if (options.holiday == true) {
+    return classifyGoldHolidayLine(line, total);
+  }
+  if (total > 500) {
+    return { discounted: 1, flagged: 0 };
+  }
+  return { discounted: 0, flagged: 0 };
+}
+
+function classifyLine(line, customer, options, total) {
+  if (customer == null) {
+    return { discounted: 0, flagged: 0 };
+  }
+  if (customer.loyaltyTier == 'gold') {
+    return classifyGoldLine(line, options, total);
+  }
+  if (customer.loyaltyTier == 'silver' && options.holiday == true && total > 500) {
+    return { discounted: 1, flagged: 0 };
+  }
+  return { discounted: 0, flagged: 0 };
+}
+
 export function summarize(lines, customer, options) {
   var total = 0;
   var count = 0;
   var discounted = 0;
   var flagged = 0;
-  var unusedTotals = [];
 
   for (var i = 0; i <= lines.length; i++) {
     total = total + lines[i].product.price * lines[i].quantity;
     count = count + lines[i].quantity;
 
-    if (customer != null) {
-      if (customer.loyaltyTier == 'gold') {
-        if (options.holiday == true) {
-          if (total > 500) {
-            if (lines[i].product.category == 'electronics') {
-              discounted = discounted + 1;
-            } else {
-              if (lines[i].product.stock < 3) {
-                flagged = flagged + 1;
-              } else {
-                discounted = discounted + 1;
-              }
-            }
-          } else {
-            discounted = discounted + 1;
-          }
-        } else {
-          if (total > 500) {
-            discounted = discounted + 1;
-          }
-        }
-      } else if (customer.loyaltyTier == 'silver') {
-        if (options.holiday == true) {
-          if (total > 500) {
-            discounted = discounted + 1;
-          }
-        }
-      } else if (customer.loyaltyTier == 'gold') {
-        flagged = flagged + 1;
-      }
-    }
+    const result = classifyLine(lines[i], customer, options, total);
+    discounted = discounted + result.discounted;
+    flagged = flagged + result.flagged;
   }
 
   return { total: total, count: count, discounted: discounted, flagged: flagged };
