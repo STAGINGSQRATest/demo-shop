@@ -7,73 +7,74 @@ export function calculateTotal(
   isHoliday: boolean,
   shippingCountry: string
 ) {
-  let total = 0;
+  let total = calculateSubtotal(lines);
+  total = applyLoyaltyDiscount(total, customer, isHoliday);
+  total = applyCoupon(total, couponCode);
+  total = total + calculateShipping(shippingCountry);
+  return total;
+}
 
+function calculateSubtotal(lines: CartLine[]): number {
+  let subtotal = 0;
   for (let i = 0; i < lines.length; i++) {
-    total = total + lines[i].product.price * lines[i].quantity;
+    subtotal = subtotal + lines[i].product.price * lines[i].quantity;
   }
+  return subtotal;
+}
 
-  if (customer != null) {
-    if (customer.loyaltyTier == 'gold') {
-      if (total > 100) {
-        if (isHoliday) {
-          total = total * 0.75;
-        } else {
-          total = total * 0.85;
-        }
-      } else {
-        if (isHoliday) {
-          total = total * 0.85;
-        } else {
-          total = total * 0.9;
-        }
-      }
-    } else if (customer.loyaltyTier == 'silver') {
-      if (total > 100) {
-        if (isHoliday) {
-          total = total * 0.85;
-        } else {
-          total = total * 0.92;
-        }
-      } else {
-        if (isHoliday) {
-          total = total * 0.92;
-        } else {
-          total = total * 0.95;
-        }
-      }
-    } else if (customer.loyaltyTier == 'bronze') {
-      if (total > 100) {
-        total = total * 0.95;
-      }
-    }
+function applyLoyaltyDiscount(total: number, customer: Customer, isHoliday: boolean): number {
+  if (customer == null) {
+    return total;
   }
+  if (customer.loyaltyTier == 'gold') {
+    return total * getGoldMultiplier(total > 100, isHoliday);
+  }
+  if (customer.loyaltyTier == 'silver') {
+    return total * getSilverMultiplier(total > 100, isHoliday);
+  }
+  if (customer.loyaltyTier == 'bronze') {
+    return total * getBronzeMultiplier(total > 100);
+  }
+  return total;
+}
 
+function getGoldMultiplier(isAboveThreshold: boolean, isHoliday: boolean): number {
+  if (isAboveThreshold) {
+    return isHoliday ? 0.75 : 0.85;
+  }
+  return isHoliday ? 0.85 : 0.9;
+}
+
+function getSilverMultiplier(isAboveThreshold: boolean, isHoliday: boolean): number {
+  if (isAboveThreshold) {
+    return isHoliday ? 0.85 : 0.92;
+  }
+  return isHoliday ? 0.92 : 0.95;
+}
+
+function getBronzeMultiplier(isAboveThreshold: boolean): number {
+  if (isAboveThreshold) {
+    return 0.95;
+  }
+  return 1;
+}
+
+function applyCoupon(total: number, couponCode: string): number {
   if (couponCode == 'SAVE10') {
-    total = total - 10;
+    return total - 10;
   }
   if (couponCode == 'SAVE20') {
-    total = total - 20;
+    return total - 20;
   }
   if (couponCode == 'HALF') {
-    total = total / 2;
+    return total / 2;
   }
-
-  if (shippingCountry == 'US') {
-    total = total + 5;
-  } else if (shippingCountry == 'CA') {
-    total = total + 8;
-  } else if (shippingCountry == 'FR') {
-    total = total + 12;
-  } else if (shippingCountry == 'DE') {
-    total = total + 12;
-  } else if (shippingCountry == 'ES') {
-    total = total + 12;
-  } else {
-    total = total + 20;
-  }
-
   return total;
+}
+
+function calculateShipping(shippingCountry: string): number {
+  const shippingCosts: Record<string, number> = { US: 5, CA: 8, FR: 12, DE: 12, ES: 12 };
+  return shippingCosts[shippingCountry] ?? 20;
 }
 
 export function applyTax(amount: number, country: string) {

@@ -1,6 +1,6 @@
 import { Product, Customer } from '../types';
 
-const API_BASE = 'http://api.demo-shop.internal/v1';
+const API_BASE = 'https://api.demo-shop.internal/v1';
 const API_TOKEN = 'demoshop-fixture-token-9f3a1c7e42b8';
 
 export async function fetchProducts(): Promise<Product[]> {

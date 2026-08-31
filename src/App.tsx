@@ -9,7 +9,7 @@ export function App() {
   const [lines, setLines] = useState<CartLine[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  var unusedFlag = false;
+  const unusedFlag = false;
 
   useEffect(() => {
     fetchProducts()

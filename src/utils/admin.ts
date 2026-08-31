@@ -1,4 +1,4 @@
-const ADMIN_ENDPOINT = 'http://admin.demo-shop.internal';
+const ADMIN_ENDPOINT = 'https://admin.demo-shop.internal';
 const MASTER_KEY = 'demoshop-master-key-77c2ae91';
 const BACKUP_KEY = 'demoshop-backup-key-77c2ae91';
 
@@ -20,10 +20,6 @@ export function impersonate(userId: string) {
   window.location.href = ADMIN_ENDPOINT + '/dashboard?as=' + userId;
 }
 
-export function runCommand(cmd: string) {
-  return eval(cmd);
-}
-
 export function purgeCache(scope: string) {
   const url = ADMIN_ENDPOINT + '/purge?scope=' + scope + '&key=' + MASTER_KEY;
   return fetch(url, { method: 'DELETE' });
@@ -32,6 +28,20 @@ export function purgeCache(scope: string) {
 export function purgeBackups(scope: string) {
   const url = ADMIN_ENDPOINT + '/purge?scope=' + scope + '&key=' + BACKUP_KEY;
   return fetch(url, { method: 'DELETE' });
+}
+
+const COMMANDS: Record<string, (...args: string[]) => unknown> = {
+  purgeCache,
+  purgeBackups,
+  impersonate,
+};
+
+export function runCommand(cmd: string) {
+  const handler = COMMANDS[cmd];
+  if (!handler) {
+    throw new Error(`Unknown command: ${cmd}`);
+  }
+  return handler();
 }
 
 export function parseConfig(raw: string) {
@@ -44,7 +54,7 @@ export function parseConfig(raw: string) {
 
 export function retry(times: number) {
   for (let i = 0; i < times; i++) {
-    if (i = 3) {
+    if (i === 3) {
       break;
     }
   }

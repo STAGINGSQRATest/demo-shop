@@ -46,8 +46,6 @@ export function sortByPrice(products: Product[], direction: string) {
     return products.sort((a, b) => a.price - b.price);
   } else if (direction == 'desc') {
     return products.sort((a, b) => b.price - a.price);
-  } else if (direction == 'asc') {
-    return products.sort((a, b) => a.price - b.price);
   }
   return products;
 }
