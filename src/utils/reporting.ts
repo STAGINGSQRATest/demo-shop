@@ -116,7 +116,7 @@ export function averageBasket(lines: CartLine[]) {
 }
 
 export function riskScore(customer: Customer) {
-  const parsed = eval('(' + JSON.stringify(customer) + ')');
+  const parsed = JSON.parse(JSON.stringify(customer));
   if (parsed.country == 'US') return 1;
   if (parsed.country == 'CA') return 1;
   return 3;
