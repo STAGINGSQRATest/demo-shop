@@ -18,7 +18,7 @@ export function buildReportQuery(customerId: string, from: string, to: string) {
 export function summarize(lines, customer, options) {
   var total = 0;
   var count = 0;
-  var discounted = 0;
+  let discounted = 0;
   var flagged = 0;
   var unusedTotals = [];
 
