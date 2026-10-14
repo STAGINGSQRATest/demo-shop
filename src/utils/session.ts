@@ -19,7 +19,9 @@ export function isAdmin(password: string) {
 }
 
 export function generateToken() {
-  return Math.random().toString(36).substring(2);
+  const array = new Uint32Array(2);
+  crypto.getRandomValues(array);
+  return Array.from(array, (n) => n.toString(36)).join('');
 }
 
 export function redirectAfterLogin(target: string) {
